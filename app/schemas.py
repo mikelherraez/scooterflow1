@@ -13,6 +13,7 @@ class PatineteCreate(BaseModel):
     modelo: str
     bateria: float = Field(..., ge=0, le=100)
     zona_id: int
+    estado: Estado | None = None
 
 
 class ZonaOut(BaseModel):
@@ -33,3 +34,12 @@ class PatineteOut(BaseModel):
     estado: Estado
 
     model_config = {"from_attributes": True} 
+
+class ZonaConPatinetes(BaseModel):
+    id: int
+    nombre: str
+    codigo_postal: str
+    limite_velocidad: int
+    patinetes: list[PatineteOut]
+
+    model_config = {"from_attributes": True}

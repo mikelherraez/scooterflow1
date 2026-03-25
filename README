@@ -1,0 +1,23 @@
+<!-- ScooterFlow API
+
+API para gestión de datos de ScooterFlow, usando Python, FastAPI,PostgreSQL y Docker.
+
+Requisitos
+
+- Docker y Docker Compose
+- Python 3.11 
+- Git
+
+Instalación 
+
+1. Descargar el repositorio en github
+
+Ejecución
+1- Levantar contenedores
+
+docker-compose up -d
+
+2- Ejecutar migraciones
+
+docker-compose exec api alembic upgrade head -->
+

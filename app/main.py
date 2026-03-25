@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
-from app.database import SessionLocal
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy import engine
+from sqlalchemy.orm import Session, joinedload
+from app.database import Base, engine, SessionLocal  
 from app import models, schemas
 from app.enums import Estado
 from app.schemas import ZonaCreate, PatineteCreate
@@ -26,13 +27,23 @@ def crear_zona(zona: ZonaCreate, db: Session = Depends(get_db)):
 
 
 @app.post("/patinetes/", response_model=schemas.PatineteOut)
-def crear_patinete(p: PatineteCreate, db: Session = Depends(get_db)):
-    patinete = models.Patinete(**p.model_dump(), estado=Estado.disponible)
+def crear_patinete(p: schemas.PatineteCreate, db: Session = Depends(get_db)):
+    patinete = models.Patinete(
+        **p.model_dump(exclude={"estado"}), 
+        estado=p.estado if p.estado else Estado.disponible)
     db.add(patinete)
     db.commit()
     db.refresh(patinete)
     return patinete
 
+@app.get("/patinetes/", response_model=list[schemas.PatineteOut])
+def obtener_patinetes(db: Session = Depends(get_db)):
+    return db.query(models.Patinete).all()
+
+@app.get("/zonas/", response_model=list[schemas.ZonaConPatinetes])
+def obtener_zonas_con_patinetes(db: Session = Depends(get_db)):
+    zonas = db.query(models.Zona).options(joinedload(models.Zona.patinetes)).all()
+    return zonas
 
 @app.post("/zonas/{zona_id}/mantenimiento", response_model=list[schemas.PatineteOut])
 def mantenimiento(zona_id: int, db: Session = Depends(get_db)):
@@ -44,4 +55,5 @@ def mantenimiento(zona_id: int, db: Session = Depends(get_db)):
         p.estado = Estado.mantenimiento
 
     db.commit()
+
     return patinetes
